@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  
+}
+
+model State{
+  id_state Int @id @default(autoincrement())
+  client_status Boolean @default(true) 
+
+  customer Customer[]
+}
+
+model Customer{
+  id_customer Int @id @default(autoincrement())
+  first_name String @db.VarChar(20)
+  middle_name String? @db.VarChar(20)
+  last_name String @db.VarChar(20)
+  last_name_2 String? @db.VarChar(20)
+  email String @unique @db.VarChar(30)
+  birthDate DateTime
+  identification String @db.VarChar(20)
+  phone_number String @db.VarChar(20)
+  address String @db.VarChar(100)
+  neighborhood String @db.VarChar(30)
+  orders Order[]
+
+  idCity Int
+  idDepartament Int
+
+  city City @relation(fields: [idCity, idDepartament], references: [idDepartament, id_city])
+
+  idState Int
+  state State @relation(fields: [idState], references: [id_state])
+
+}
+
+model Departament{
+  id_departament Int @id @default(autoincrement())
+  name String @db.VarChar(100)
+  cities City[] 
+}
+
+model City{
+  id_city Int @default(autoincrement())
+  idDepartament Int 
+  name String @db.VarChar(100)
+  customers Customer[]
+
+  departament Departament @relation(fields: [idDepartament], references: [id_departament])
+
+  @@id([idDepartament, id_city])
+}
+
+model Order{
+
+  user User @relation(fields: [iduser], references: [id_user])
+  iduser Int 
+
+  customer Customer @relation(fields: [idCustomer], references: [id_customer])
+  idCustomer Int
+
+  totalPrice Decimal 
+
+  product_orders ProductOrder[]
+
+  @@id([idCustomer,iduser])
+}
+
+model User{
+ id_user Int @id @default(autoincrement())
+ name String @db.VarChar(20)
+ last_name String @db.VarChar(20)
+ phone_number String @db.VarChar(20)
+ initial_data DateTime @default(now())
+ email String @unique @db.VarChar(30)
+ password String @db.VarChar(110)
+ image String? @db.VarChar(50)
+ orders Order[]
+ rolUser RoleUser[]
+}
+
+model Rol{
+  id_rol Int @id @default(autoincrement())
+  name String @db.VarChar(20)
+  rolUser RoleUser[]
+}
+
+model RoleUser{
+  create_date DateTime @default(now())
+
+  idRol Int
+  rol Rol @relation(fields: [idRol], references: [id_rol])
+
+  idUser Int
+  user User @relation(fields: [idUser], references: [id_user])
+  @@id([idRol, idUser])
+}
+
+model ProductOrder{
+ cod Int @id @default(autoincrement())
+ delivery_date DateTime 
+ delivery_invoice DateTime
+ reception_date DateTime?
+ recepcion_invoice DateTime?
+ product_amount Int
+
+ 
+ iduser Int
+ idCustomer Int
+ order Order @relation(fields: [idCustomer,iduser ], references: [idCustomer,iduser])
+
+ idPackaging Int
+ packaging Packaging @relation(fields: [idPackaging], references: [id_packaging])
+}
+
+model Content{
+  id_content Int @id @default(autoincrement())
+  name String @db.VarChar(20)
+  unit_measurement String @db.VarChar(10)
+  price Float
+  packaging Packaging[]
+}
+
+model Packaging{
+ id_packaging Int @id @default(autoincrement())
+ hydrostatic_date DateTime
+ stock Int
+ lote DateTime
+ maker String @db.VarChar(30)
+ producOrders ProductOrder[]
+
+ idContent Int
+ content Content @relation(fields: [idContent], references: [id_content])
+
+ idTypePackaging Int
+ typePackaging TypePackaging @relation(fields: [idTypePackaging], references: [id_type_packaging])
+}
+
+model TypePackaging{
+ id_type_packaging Int @id @default(autoincrement())
+ pressure_amount Float
+ size Float
+ price Float
+ color String @db.VarChar(20)
+ packaging Packaging[]
+}
