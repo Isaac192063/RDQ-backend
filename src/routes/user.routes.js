@@ -11,6 +11,9 @@ routerUser.post(
   multer.single("image"),
   employeeController.createUser
 );
+routerUser.get("", (req, res)=>{
+  res.send("hello world")
+})
 routerUser.post("/api/user/login", employeeController.loginUser);
 routerUser.get("/api/user/emp", employeeController.getAllEmployes);
 routerUser.get("/api/user/:id", employeeController.getUserById);
