@@ -87,25 +87,15 @@ model User{
  email String @unique @db.VarChar(30)
  password String @db.VarChar(110)
  image String? @db.VarChar(50)
+ idRol Int
+ rolUser Rol @relation(fields: [idRol], references: [id_rol])
  orders Order[]
- rolUser RoleUser[]
 }
 
 model Rol{
   id_rol Int @id @default(autoincrement())
   name String @db.VarChar(20)
-  rolUser RoleUser[]
-}
-
-model RoleUser{
-  create_date DateTime @default(now())
-
-  idRol Int
-  rol Rol @relation(fields: [idRol], references: [id_rol])
-
-  idUser Int
-  user User @relation(fields: [idUser], references: [id_user])
-  @@id([idRol, idUser])
+  rolUser User[]
 }
 
 model ProductOrder{
