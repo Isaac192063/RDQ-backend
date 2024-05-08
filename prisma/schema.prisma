@@ -15,104 +15,109 @@ datasource db {
   
 }
 
-model State{
-  id_state Int @id @default(autoincrement())
-  client_status Boolean @default(true) 
-
-  customer Customer[]
-}
-
 model Customer{
-  id_customer Int @id @default(autoincrement())
+  identification String @db.VarChar(20) @id
   first_name String @db.VarChar(20)
   middle_name String? @db.VarChar(20)
   last_name String @db.VarChar(20)
   last_name_2 String? @db.VarChar(20)
   email String @unique @db.VarChar(30)
   birthDate DateTime
-  identification String @db.VarChar(20)
   phone_number String @db.VarChar(20)
-  address String @db.VarChar(100)
+  address String @db.VarChar(40)
   neighborhood String @db.VarChar(30)
+  state Boolean
   orders Order[]
 
-  idCity Int
-  idDepartament Int
+  idCity String @db.VarChar(3)
 
-  city City @relation(fields: [idCity, idDepartament], references: [idDepartament, id_city])
+  city City @relation(fields: [idCity], references: [id_city])
 
-  idState Int
-  state State @relation(fields: [idState], references: [id_state])
-
+  @@map("customers")
 }
 
 model Departament{
-  id_departament Int @id @default(autoincrement())
+  id_departament String @db.VarChar(2) @id 
   name String @db.VarChar(100)
   cities City[] 
+  @@map("departaments")
 }
 
 model City{
-  id_city Int @default(autoincrement())
-  idDepartament Int 
+  id_city String @db.VarChar(3) @id
+  idDepartament String @db.VarChar(2) 
   name String @db.VarChar(100)
   customers Customer[]
 
   departament Departament @relation(fields: [idDepartament], references: [id_departament])
 
-  @@id([idDepartament, id_city])
+  @@map("cities")
 }
 
 model Order{
 
-  user User @relation(fields: [iduser], references: [id_user])
+  order_number Int @id @default(autoincrement())
+  identification_user String @db.VarChar(20)
+  type_process String @db.VarChar(15)
+  total Decimal  
+
   iduser Int 
-
-  customer Customer @relation(fields: [idCustomer], references: [id_customer])
-  idCustomer Int
-
-  totalPrice Decimal 
-
+  user User @relation(fields: [iduser], references: [id_user])
+  
+  customer Customer @relation(fields: [identification_user], references: [identification])
   product_orders ProductOrder[]
 
-  @@id([idCustomer,iduser])
+  @@map("orders")
 }
 
 model User{
  id_user Int @id @default(autoincrement())
- name String @db.VarChar(20)
- last_name String @db.VarChar(20)
- phone_number String @db.VarChar(20)
+ name String @db.VarChar(30)
+ last_name String @db.VarChar(30)
+ phone_number String @db.VarChar(30)
  initial_data DateTime @default(now())
  email String @unique @db.VarChar(30)
- password String @db.VarChar(110)
+ password String @db.VarChar(60)
  image String? @db.VarChar(50)
+ enabled Boolean @default(true)
+
  idRol Int
  rolUser Rol @relation(fields: [idRol], references: [id_rol])
  orders Order[]
+
+ @@map("users")
 }
+
+// enum Role { 
+//   USER 
+//   ADMIN 
+// } 
 
 model Rol{
   id_rol Int @id @default(autoincrement())
   name String @db.VarChar(20)
   rolUser User[]
+  @@map("roles")
 }
 
 model ProductOrder{
- cod Int @id @default(autoincrement())
  delivery_date DateTime 
  delivery_invoice DateTime
  reception_date DateTime?
  recepcion_invoice DateTime?
  product_amount Int
+ quantity Int
+ subtotal Decimal 
 
- 
- iduser Int
- idCustomer Int
- order Order @relation(fields: [idCustomer,iduser ], references: [idCustomer,iduser])
+ order_number Int
+ order Order @relation(fields: [order_number], references: [order_number])
 
- idPackaging Int
+ idPackaging String @db.VarChar(8)
  packaging Packaging @relation(fields: [idPackaging], references: [id_packaging])
+
+ @@id([order_number, idPackaging])
+
+ @@map("product_orders")
 }
 
 model Content{
@@ -121,14 +126,15 @@ model Content{
   unit_measurement String @db.VarChar(10)
   price Float
   packaging Packaging[]
+
+  @@map("contents")
 }
 
 model Packaging{
- id_packaging Int @id @default(autoincrement())
+ id_packaging String @db.VarChar(8)  @id 
  hydrostatic_date DateTime
  stock Int
- lote DateTime
- maker String @db.VarChar(30)
+ supplier String @db.VarChar(30)
  producOrders ProductOrder[]
 
  idContent Int
@@ -136,6 +142,8 @@ model Packaging{
 
  idTypePackaging Int
  typePackaging TypePackaging @relation(fields: [idTypePackaging], references: [id_type_packaging])
+
+@@map("packagings")
 }
 
 model TypePackaging{
@@ -145,4 +153,6 @@ model TypePackaging{
  price Float
  color String @db.VarChar(20)
  packaging Packaging[]
+
+ @@map("type_packagings")
 }

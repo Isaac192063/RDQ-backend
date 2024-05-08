@@ -15,7 +15,7 @@ app.use(cors())
 
 app.use(express.static(patch.join(__dirname, 'public')))
 
-app.use(routesUsers)
+app.use('/api/user',routesUsers)
 
 
 app.listen(PORT)
