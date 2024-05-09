@@ -83,13 +83,13 @@ Enviar estos parametros:
 #### Delete user
 
 ```http
-  Delete /api/user/login
+  Delete /api/user/${id}
 ```
 
 #### Post user - logeo
 
 ```http
-  POST /api/user
+  POST /api/user/login
 ```
 Enviar estos parametros:
 | Parameter | Type     | Description                       |
