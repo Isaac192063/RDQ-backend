@@ -20,7 +20,9 @@ DATABASE_URL="postgresql://postgres:ADMIN@localhost:5433/shopRDQ?schema=public"
 ```
 4. ejecutar comando
 ```bash
-npm install 
+npm install
+npm i bcrypt cors express jsonwebtoken morgan multer
+npm i -D nodemon prisma
 npx prisma migrate dev 
 ```
 5. Ingresar estos roles. en la base de datos
