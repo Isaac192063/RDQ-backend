@@ -3,6 +3,7 @@ const patch = require('path');
 const morgan = require('morgan');
 const cors = require('cors')
 const routesUsers = require('./routes/user.routes')
+const routersProducts = require('./routes/product.routes')
 const PORT = require('./config/port')
 const app = express()
 
@@ -16,6 +17,7 @@ app.use(cors())
 app.use(express.static(patch.join(__dirname, 'public')))
 
 app.use('/api/user',routesUsers)
+app.use('/api/product', routersProducts)
 
 
 app.listen(PORT)

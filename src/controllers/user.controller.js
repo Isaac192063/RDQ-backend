@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const { key } = require("../config/key");
 const { deleteImage } = require("../others/deleteImage");
 const bcrypt = require("bcrypt");
-const {sendError, MESSAGE} = require("../others/errors");
+const { sendError, MESSAGE } = require("../others/errors");
 
 module.exports = {
   async getAllUsers(req, res) {
@@ -14,6 +14,7 @@ module.exports = {
         data: users,
       });
     } catch (error) {
+      console.log(error);
       return sendError(res, MESSAGE.ERROR_SERVIDOR, 500);
     }
   },
@@ -21,12 +22,10 @@ module.exports = {
     try {
       const user = req.body;
 
-      if(req.file){
-
+      if (req.file) {
         const file = req.file;
         user.image = file.filename;
       }
-
 
       const password_encrypted = await bcrypt.hash(user.password, 10);
       user.password = password_encrypted;
@@ -36,7 +35,7 @@ module.exports = {
       });
 
       if (!rol) {
-        return   sendError(res, MESSAGE.BAD_REQUEST, 400);
+        return sendError(res, MESSAGE.BAD_REQUEST, 400);
       }
       const aux_rol = user.rol;
       delete user.rol;
@@ -53,7 +52,11 @@ module.exports = {
         message: "empleado registrado",
       });
     } catch (error) {
-      return  sendError(res, MESSAGE.ERROR_SERVIDOR, 500);
+      console.log(error.code);
+      if (error.code == "P2002") {
+        return sendError(res, "El email ya esta en uso", 400);
+      }
+      return sendError(res, MESSAGE.ERROR_SERVIDOR, 500);
     }
   },
   async loginUser(req, res) {
@@ -65,12 +68,12 @@ module.exports = {
       if (!userEmail) {
         return sendError(res, "usuario no encontrado", 404);
       }
-      
+
       const userComparation = await bcrypt.compare(
         password,
         userEmail.password
       );
-      
+
       if (!userComparation) {
         return sendError(res, "Contraseña incorrecta", 401);
       }
@@ -126,10 +129,10 @@ module.exports = {
           id_user: "desc",
         },
       });
-        console.log(employes);
+      console.log(employes);
       res.status(200).json({
         success: true,
-        data:employes,
+        data: employes,
       });
     } catch (error) {
       return sendError(res, MESSAGE.ERROR_SERVIDOR, 500);
@@ -180,6 +183,10 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
+      if (error.code == "P2002") {
+        return sendError(res, "El email ya esta en uso", 400);
+      }
+
       res.status(500).json({
         sucess: false,
         message:
@@ -219,7 +226,6 @@ module.exports = {
     const name = req.query.name;
     console.log(name);
     try {
-      
       const users = await prisma.user.findMany({
         where: {
           name: {
@@ -228,12 +234,10 @@ module.exports = {
           idRol: 1,
         },
       });
-    
-      return res.status(200).json(users);
 
+      return res.status(200).json(users);
     } catch (error) {
       return sendError(res, MESSAGE.ERROR_SERVIDOR, 500);
     }
-
   },
 };
