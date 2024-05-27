@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "PersonType" AS ENUM ('NATURAL', 'JURIDICO');
+
 -- CreateTable
 CREATE TABLE "customers" (
     "identification" VARCHAR(20) NOT NULL,
@@ -10,27 +13,30 @@ CREATE TABLE "customers" (
     "phone_number" VARCHAR(20) NOT NULL,
     "address" VARCHAR(40) NOT NULL,
     "neighborhood" VARCHAR(30) NOT NULL,
-    "state" BOOLEAN NOT NULL,
-    "idCity" VARCHAR(3) NOT NULL,
+    "state" BOOLEAN NOT NULL DEFAULT true,
+    "warranty" VARCHAR(100) NOT NULL,
+    "typePerson" "PersonType" NOT NULL,
+    "cty_id" VARCHAR(3) NOT NULL,
+    "dpt_cty_id" VARCHAR(2) NOT NULL,
 
     CONSTRAINT "customers_pkey" PRIMARY KEY ("identification")
 );
 
 -- CreateTable
 CREATE TABLE "departaments" (
-    "id_departament" VARCHAR(2) NOT NULL,
+    "id" VARCHAR(2) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
 
-    CONSTRAINT "departaments_pkey" PRIMARY KEY ("id_departament")
+    CONSTRAINT "departaments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "cities" (
-    "id_city" VARCHAR(3) NOT NULL,
-    "idDepartament" VARCHAR(2) NOT NULL,
+    "id" VARCHAR(3) NOT NULL,
     "name" VARCHAR(100) NOT NULL,
+    "dpt_id" VARCHAR(2) NOT NULL,
 
-    CONSTRAINT "cities_pkey" PRIMARY KEY ("id_city")
+    CONSTRAINT "cities_pkey" PRIMARY KEY ("id","dpt_id")
 );
 
 -- CreateTable
@@ -46,7 +52,7 @@ CREATE TABLE "orders" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id_user" SERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(30) NOT NULL,
     "last_name" VARCHAR(30) NOT NULL,
     "phone_number" VARCHAR(30) NOT NULL,
@@ -55,65 +61,60 @@ CREATE TABLE "users" (
     "password" VARCHAR(60) NOT NULL,
     "image" VARCHAR(50),
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "idRol" INTEGER NOT NULL,
+    "rol_id" INTEGER NOT NULL,
 
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id_user")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "roles" (
-    "id_rol" SERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(20) NOT NULL,
 
-    CONSTRAINT "roles_pkey" PRIMARY KEY ("id_rol")
+    CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "product_orders" (
     "delivery_date" TIMESTAMP(3) NOT NULL,
-    "delivery_invoice" TIMESTAMP(3) NOT NULL,
     "reception_date" TIMESTAMP(3),
-    "recepcion_invoice" TIMESTAMP(3),
     "product_amount" INTEGER NOT NULL,
     "quantity" INTEGER NOT NULL,
     "subtotal" DECIMAL(65,30) NOT NULL,
+    "empty" BOOLEAN NOT NULL DEFAULT true,
     "order_number" INTEGER NOT NULL,
-    "idPackaging" VARCHAR(8) NOT NULL,
+    "pkg_id" VARCHAR(8) NOT NULL,
 
-    CONSTRAINT "product_orders_pkey" PRIMARY KEY ("order_number","idPackaging")
+    CONSTRAINT "product_orders_pkey" PRIMARY KEY ("order_number","pkg_id")
 );
 
 -- CreateTable
 CREATE TABLE "contents" (
-    "id_content" SERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "name" VARCHAR(20) NOT NULL,
-    "unit_measurement" VARCHAR(10) NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
+    "color" VARCHAR(20) NOT NULL,
 
-    CONSTRAINT "contents_pkey" PRIMARY KEY ("id_content")
+    CONSTRAINT "contents_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "packagings" (
-    "id_packaging" VARCHAR(8) NOT NULL,
+    "id" VARCHAR(15) NOT NULL,
     "hydrostatic_date" TIMESTAMP(3) NOT NULL,
-    "stock" INTEGER NOT NULL,
-    "supplier" VARCHAR(30) NOT NULL,
-    "idContent" INTEGER NOT NULL,
-    "idTypePackaging" INTEGER NOT NULL,
+    "owner" VARCHAR(30) NOT NULL,
+    "ctt_id" INTEGER NOT NULL,
+    "tpg_cod" INTEGER NOT NULL,
 
-    CONSTRAINT "packagings_pkey" PRIMARY KEY ("id_packaging")
+    CONSTRAINT "packagings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "type_packagings" (
-    "id_type_packaging" SERIAL NOT NULL,
-    "pressure_amount" DOUBLE PRECISION NOT NULL,
+    "cod" SERIAL NOT NULL,
     "size" DOUBLE PRECISION NOT NULL,
-    "price" DOUBLE PRECISION NOT NULL,
-    "color" VARCHAR(20) NOT NULL,
+    "pressure_amount" VARCHAR(3) NOT NULL,
 
-    CONSTRAINT "type_packagings_pkey" PRIMARY KEY ("id_type_packaging")
+    CONSTRAINT "type_packagings_pkey" PRIMARY KEY ("cod")
 );
 
 -- CreateIndex
@@ -123,28 +124,28 @@ CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- AddForeignKey
-ALTER TABLE "customers" ADD CONSTRAINT "customers_idCity_fkey" FOREIGN KEY ("idCity") REFERENCES "cities"("id_city") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "customers" ADD CONSTRAINT "customers_cty_id_dpt_cty_id_fkey" FOREIGN KEY ("cty_id", "dpt_cty_id") REFERENCES "cities"("id", "dpt_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cities" ADD CONSTRAINT "cities_idDepartament_fkey" FOREIGN KEY ("idDepartament") REFERENCES "departaments"("id_departament") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "cities" ADD CONSTRAINT "cities_dpt_id_fkey" FOREIGN KEY ("dpt_id") REFERENCES "departaments"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "orders" ADD CONSTRAINT "orders_iduser_fkey" FOREIGN KEY ("iduser") REFERENCES "users"("id_user") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "orders" ADD CONSTRAINT "orders_iduser_fkey" FOREIGN KEY ("iduser") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_identification_user_fkey" FOREIGN KEY ("identification_user") REFERENCES "customers"("identification") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_idRol_fkey" FOREIGN KEY ("idRol") REFERENCES "roles"("id_rol") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_rol_id_fkey" FOREIGN KEY ("rol_id") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product_orders" ADD CONSTRAINT "product_orders_order_number_fkey" FOREIGN KEY ("order_number") REFERENCES "orders"("order_number") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product_orders" ADD CONSTRAINT "product_orders_idPackaging_fkey" FOREIGN KEY ("idPackaging") REFERENCES "packagings"("id_packaging") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "product_orders" ADD CONSTRAINT "product_orders_pkg_id_fkey" FOREIGN KEY ("pkg_id") REFERENCES "packagings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "packagings" ADD CONSTRAINT "packagings_idContent_fkey" FOREIGN KEY ("idContent") REFERENCES "contents"("id_content") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "packagings" ADD CONSTRAINT "packagings_ctt_id_fkey" FOREIGN KEY ("ctt_id") REFERENCES "contents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "packagings" ADD CONSTRAINT "packagings_idTypePackaging_fkey" FOREIGN KEY ("idTypePackaging") REFERENCES "type_packagings"("id_type_packaging") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "packagings" ADD CONSTRAINT "packagings_tpg_cod_fkey" FOREIGN KEY ("tpg_cod") REFERENCES "type_packagings"("cod") ON DELETE RESTRICT ON UPDATE CASCADE;

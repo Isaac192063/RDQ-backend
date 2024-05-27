@@ -12,7 +12,11 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  
+}
+
+enum PersonType {
+  NATURAL
+  JURIDICO
 }
 
 model Customer{
@@ -26,43 +30,46 @@ model Customer{
   phone_number String @db.VarChar(20)
   address String @db.VarChar(40)
   neighborhood String @db.VarChar(30)
-  state Boolean
+  state Boolean @default(true)
+  warranty String @db.VarChar(100)
+  typePerson PersonType
   orders Order[]
 
-  idCity String @db.VarChar(3)
+  cty_id String @db.VarChar(3)
+  dpt_cty_id String @db.VarChar(2)
 
-  city City @relation(fields: [idCity], references: [id_city])
+  city City @relation(fields: [cty_id, dpt_cty_id], references: [id, dpt_id])
 
   @@map("customers")
 }
 
 model Departament{
-  id_departament String @db.VarChar(2) @id 
+  id String @db.VarChar(2) @id 
   name String @db.VarChar(100)
   cities City[] 
   @@map("departaments")
 }
 
 model City{
-  id_city String @db.VarChar(3) @id
-  idDepartament String @db.VarChar(2) 
+  id String @db.VarChar(3) 
   name String @db.VarChar(100)
   customers Customer[]
 
-  departament Departament @relation(fields: [idDepartament], references: [id_departament])
+  dpt_id String @db.VarChar(2) 
+  departament Departament @relation(fields: [dpt_id], references: [id])
+  @@id([id, dpt_id])
 
   @@map("cities")
 }
 
 model Order{
-
   order_number Int @id @default(autoincrement())
   identification_user String @db.VarChar(20)
   type_process String @db.VarChar(15)
   total Decimal  
 
   iduser Int 
-  user User @relation(fields: [iduser], references: [id_user])
+  user User @relation(fields: [iduser], references: [id])
   
   customer Customer @relation(fields: [identification_user], references: [identification])
   product_orders ProductOrder[]
@@ -71,7 +78,7 @@ model Order{
 }
 
 model User{
- id_user Int @id @default(autoincrement())
+ id Int @id @default(autoincrement())
  name String @db.VarChar(30)
  last_name String @db.VarChar(30)
  phone_number String @db.VarChar(30)
@@ -81,77 +88,68 @@ model User{
  image String? @db.VarChar(50)
  enabled Boolean @default(true)
 
- idRol Int
- rolUser Rol @relation(fields: [idRol], references: [id_rol])
+ rol_id Int
+ rolUser Rol @relation(fields: [rol_id], references: [id])
  orders Order[]
 
  @@map("users")
 }
 
-// enum Role { 
-//   USER 
-//   ADMIN 
-// } 
-
 model Rol{
-  id_rol Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
   name String @db.VarChar(20)
   rolUser User[]
   @@map("roles")
 }
 
 model ProductOrder{
+  // id 
  delivery_date DateTime 
- delivery_invoice DateTime
  reception_date DateTime?
- recepcion_invoice DateTime?
  product_amount Int
  quantity Int
  subtotal Decimal 
-
+ empty Boolean @default(true)
  order_number Int
  order Order @relation(fields: [order_number], references: [order_number])
 
- idPackaging String @db.VarChar(8)
- packaging Packaging @relation(fields: [idPackaging], references: [id_packaging])
+ pkg_id String @db.VarChar(8)
+ packaging Packaging @relation(fields: [pkg_id], references: [id])
 
- @@id([order_number, idPackaging])
+ @@id([order_number, pkg_id])
 
  @@map("product_orders")
 }
 
 model Content{
-  id_content Int @id @default(autoincrement())
+  id Int @id @default(autoincrement())
   name String @db.VarChar(20)
-  unit_measurement String @db.VarChar(10)
-  price Float
+  color String @db.VarChar(20)
   packaging Packaging[]
 
   @@map("contents")
 }
 
 model Packaging{
- id_packaging String @db.VarChar(8)  @id 
+ id String @db.VarChar(15)  @id 
  hydrostatic_date DateTime
- stock Int
- supplier String @db.VarChar(30)
+ owner String @db.VarChar(30) //cambiarlo como por el dusño del cilindro
  producOrders ProductOrder[]
 
- idContent Int
- content Content @relation(fields: [idContent], references: [id_content])
+ ctt_id Int
+ content Content @relation(fields: [ctt_id], references: [id])
 
- idTypePackaging Int
- typePackaging TypePackaging @relation(fields: [idTypePackaging], references: [id_type_packaging])
+ tpg_cod Int
+ typePackaging TypePackaging @relation(fields: [tpg_cod], references: [cod])
 
 @@map("packagings")
 }
 
 model TypePackaging{
- id_type_packaging Int @id @default(autoincrement())
- pressure_amount Float
+ cod Int @id @default(autoincrement())
  size Float
- price Float
- color String @db.VarChar(20)
+ pressure_amount String @db.VarChar(3)
+//  price Float
  packaging Packaging[]
 
  @@map("type_packagings")

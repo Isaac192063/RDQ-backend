@@ -27,11 +27,12 @@ module.exports = {
     },
     async newProduct(req, res){
         try {
-            const { content = null, typePackaging = null, ...packaging } = body;
+            const { content, typePackaging , ...packaging } = req.body;
+            console.log(packaging)
+            console.log(req.body);
     
-            const produc = await newProduct(content, typePackaging, ...packaging );
+            const produc = await newProduct(content, typePackaging, packaging );
     
-            console.log(produc)
             
             res.status(201).json({
                 "success": true,
@@ -41,7 +42,7 @@ module.exports = {
     
         } catch (error) {
             console.log(error)
-            res.status(500).send({"error":"error en el servidor"})
+            sendError(res, error.message, 500);
         }
     }
 }
