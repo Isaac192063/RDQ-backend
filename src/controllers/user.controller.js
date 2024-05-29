@@ -1,7 +1,5 @@
-const prisma = require("../config/prisma");
-
 const { deleteImage } = require("../others/deleteImage");
-const { sendError, MESSAGE } = require("../others/errors");
+const { sendError, MESSAGE } = require("../others/response");
 const {
   newUser,
   getAllUsers,

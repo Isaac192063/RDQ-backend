@@ -1,4 +1,4 @@
-const { sendError, MESSAGE, sendResponseOk } = require("../others/errors");
+const { sendError, MESSAGE, sendResponseOk } = require("../others/response");
 const { getByProductId, getAllProducts, newProduct } = require("../service/productService");
 
 module.exports = {

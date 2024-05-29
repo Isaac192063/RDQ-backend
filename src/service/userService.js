@@ -1,6 +1,6 @@
 const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
-const { sendError, MESSAGE, sendResponseOk } = require("../others/errors");
+const { sendError, MESSAGE, sendResponseOk } = require("../others/response");
 const jwt = require("jsonwebtoken");
 const { key } = require("../config/key");
 const { deleteImage } = require("../others/deleteImage");
