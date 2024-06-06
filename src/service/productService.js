@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const CustomError = require("../others/customErrors");
 
 async function newProduct(content, typePackaging, packaging) {
   try {
@@ -9,7 +10,6 @@ async function newProduct(content, typePackaging, packaging) {
     const createdContent = await prisma.content.findFirst({
       where: { id: content.id },
     });
-
 
     const createdPackaging = await prisma.packaging.create({
       data: {
@@ -33,27 +33,71 @@ async function newProduct(content, typePackaging, packaging) {
 }
 
 async function getByProductId(id) {
-  const product = await prisma.packaging.findFirst({
-    where: {
-      id: id,
-    },
-    include: {
-      content: true,
-      typePackaging: true,
-    },
-  });
+  try {
+    
+    const product = await prisma.packaging.findFirst({
+      where: {
+        id: id,
+      },
+      include: {
+        content: true,
+        typePackaging: true,
+      },
+    });
 
-  return product;
+    if(!product){
+      throw new CustomError("No se encontro el prouducto buscado", 404);
+    }
+  
+    return product;
+  } catch (error) {
+    if(error.message){
+      throw new CustomError(error.message, error.statusCode);
+
+    }
+    throw new CustomError("Error en el servidor", 500);
+  }
 }
 
 async function getAllProducts() {
-  const products = await prisma.packaging.findMany({
-    include: {
-      content: true,
-      typePackaging: true,
-    },
-  });
+  try {
+    const products = await prisma.packaging.findMany({
+      include: {
+        content: true,
+        typePackaging: true,
+      },
+    });
 
-  return products;
+    return products;
+  } catch (error) {
+    throw new CustomError("Error en el servidor", 500);
+  }
 }
-module.exports = { newProduct, getByProductId, getAllProducts };
+
+async function updateProduct(id, product) {
+  try {
+  } catch (error) {}
+}
+
+async function getProductByCod(cod){
+  try {
+    console.log("first")
+    const products = await prisma.packaging.findMany({
+      where:{
+        id:{
+          contains:cod,
+          mode: 'insensitive'
+        }
+      },
+      include: {
+        content: true,
+        typePackaging: true,
+      },
+    });
+
+    return products;
+  } catch (error) {
+    throw new CustomError("Error en el servidor", 500);
+  }
+}
+module.exports = { newProduct, getByProductId, getAllProducts, getProductByCod };

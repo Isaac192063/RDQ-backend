@@ -130,6 +130,8 @@ async function deleteCustomer(id) {
   }
 }
 
+
+
 module.exports = {
   newCustomer,
   getAllCustomers,

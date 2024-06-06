@@ -18,5 +18,6 @@ routerProduct.get("/typePackaging", async (req, res) => {
   const products = await prisma.typePackaging.findMany();
   return res.status(200).json(products);
 });
+routerProduct.get("/search", productController.getProductByCod)
 
 module.exports = routerProduct;

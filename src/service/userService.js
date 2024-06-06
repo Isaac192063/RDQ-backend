@@ -1,9 +1,10 @@
 const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
-const { sendError, MESSAGE, sendResponseOk } = require("../others/response");
+const {  MESSAGE } = require("../others/response");
 const jwt = require("jsonwebtoken");
 const { key } = require("../config/key");
 const { deleteImage } = require("../others/deleteImage");
+const CustomError = require("../others/customErrors");
 
 async function newUser(user, res) {
   try {
@@ -15,7 +16,7 @@ async function newUser(user, res) {
     });
 
     if (!rol) {
-      throw new Error("Rol no encontrado");
+      throw new CustomError("Rol inexistente", 400);
     }
 
     const aux_rol = user.rol;
@@ -30,10 +31,12 @@ async function newUser(user, res) {
     return newUser;
   } catch (error) {
     if (error.code == "P2002") {
-      throw new Error("Este email ya fue registrado");
+      throw new CustomError("Este email ya fue registrado", 409);
+    }else if(error.message){
+      throw new CustomError(error.message, error.statusCode);
     }
 
-    throw new Error("solicitud incorrecta");
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 
@@ -42,7 +45,7 @@ async function getAllUsers(res) {
     const users = await prisma.user.findMany();
     return users;
   } catch (error) {
-    throw new Error(MESSAGE.ERROR_SERVIDOR);
+    throw new CustomError(MESSAGE.ERROR_SERVIDOR, 500);
   }
 }
 
@@ -51,13 +54,13 @@ async function loginUser(res, password, email) {
     const userEmail = await prisma.user.findFirst({ where: { email } });
 
     if (!userEmail) {
-      throw new Error("usuario no encontrado");
+      throw new CustomError("usuario no encontrado", 404);
     }
 
     const userComparation = await bcrypt.compare(password, userEmail.password);
 
     if (!userComparation) {
-      throw new Error("Contraseña incorrecta");
+      throw new CustomError("Contraseña incorrecta", 401);
     }
 
     const user = await prisma.user.findFirst({
@@ -71,9 +74,9 @@ async function loginUser(res, password, email) {
     return token;
   } catch (error) {
     if (error.message) {
-      throw new Error(error.message);
+      throw new CustomError(error.message, error.statusCode);
     }
-    throw new Error("solicitud incorrecta");
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 
@@ -82,14 +85,14 @@ async function getUserById(id, res) {
     const user = await prisma.user.findFirst({ where: { id: id } });
 
     if (!user) {
-      throw new Error("Usuario no encontrado");
+      throw new CustomError("Usuario no fue encontrado", 404);
     }
     return user;
   } catch (error) {
     if (error.message) {
-      throw new Error(error.message);
+      throw new CustomError(error.message, error.statusCode);
     }
-    throw new Error("solicitud incorrecta");
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 
@@ -105,7 +108,7 @@ async function getAllEmployes() {
     });
     return employes;
   } catch (error) {
-    throw new Error("solicitud incorrecta");
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 async function updateUser(id, req, newUser) {
@@ -117,7 +120,7 @@ async function updateUser(id, req, newUser) {
     });
 
     if (!user) {
-      throw new Error("Empledo no fue encontrado");
+      throw new CustomError("Empledo no fue encontrado", 404);
     }
 
     const password_encrypted = await bcrypt.hash(newUser.password, 10);
@@ -145,11 +148,11 @@ async function updateUser(id, req, newUser) {
     return updateEmployee;
   } catch (error) {
     if (error.code == "P2002") {
-      throw new Error("El email ya esta en uso");
+      throw new CustomError("El email ya esta en uso", 409);
     }else if (error.message) {
-      throw new Error(error.message);
+      throw new CustomError(error.message, error.statusCode);
     }
-    throw new Error("solicitud incorrecta");
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 
@@ -162,7 +165,7 @@ async function deleteUser(id) {
     });
 
     if (!userDelete) {
-      throw new Error("Usuario no encontrado");
+      throw new CustomError("Usuario no encontrado", 404);
     }
 
     const updatedStatus = await prisma.user.update({
@@ -174,9 +177,9 @@ async function deleteUser(id) {
     return updatedStatus;
   } catch (error) {
     if(error.message){
-      throw new Error(error.message);
+      throw new CustomError(error.message, error.statusCode);
     }
-    throw new Error(MESSAGE.ERROR_SERVIDOR);
+    throw new CustomError(MESSAGE.ERROR_SERVIDOR, 500);
   }
 }
 
@@ -186,12 +189,13 @@ async function findUserName(name) {
       where: {
         name: {
           contains: name,
+          mode: 'insensitive'
         },
       },
     });
     return users;
   } catch (error) {
-    throw new Error(MESSAGE.ERROR_SERVIDOR);
+    throw new CustomError(MESSAGE.ERROR_SERVIDOR, 500);
   }
 }
 

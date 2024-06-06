@@ -22,7 +22,7 @@ module.exports = {
         });
       }
     } catch (error) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, error.statusCode);
     }
   },
   async createUser(req, res, next) {
@@ -45,7 +45,7 @@ module.exports = {
       }
     } catch (error) {
       console.log(error)
-      return sendError(res, error.message, 401);
+      return sendError(res, error.message, error.statusCode);
     }
   },
   async loginUser(req, res, next) {
@@ -62,7 +62,7 @@ module.exports = {
         });
       }
     } catch (error) {
-      return sendError(res, error.message, 401);
+      return sendError(res, error.message, error.statusCode);
     }
   },
   async getUserById(req, res, next) {
@@ -77,7 +77,7 @@ module.exports = {
         data: user,
       });
     } catch (error) {
-      sendError(res, error.message, 401);
+      sendError(res, error.message, error.statusCode);
     }
   },
   async getAllEmployes(req, res) {
@@ -89,7 +89,7 @@ module.exports = {
         data: employes,
       });
     } catch (error) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, error.statusCode);
     }
   },
   async updateUser(req, res) {
@@ -104,7 +104,7 @@ module.exports = {
         message: "Informacion del empleado actualizada",
       });
     } catch (error) {
-      sendError(res, error.message, 500);
+      sendError(res, error.message, error.statusCode);
     }
   },
   async deleteUser(req, res) {
@@ -117,18 +117,19 @@ module.exports = {
         success: true,
       });
     } catch (error) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, error.statusCode);
     }
   },
   async findUserName(req, res) {
     const name = req.query.name;
-    console.log(name);
+    console.log("name pasado: "+ name)
     try {
       const users = await findUserName(name);
+      console.log(users.length)
 
       return res.status(200).json(users);
     } catch (error) {
-      return sendError(res, error.message, 500);
+      return sendError(res, error.message, error.statusCode);
     }
   },
 };
