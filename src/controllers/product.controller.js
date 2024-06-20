@@ -4,6 +4,8 @@ const {
   getAllProducts,
   newProduct,
   getProductByCod,
+  updateProduct,
+  deleteProduct,
 } = require("../service/productService");
 
 module.exports = {
@@ -39,12 +41,12 @@ module.exports = {
 
       res.status(201).json({
         success: true,
-        message: "Producto creado",
+        message: "Producto creado con exito",
         data: produc,
       });
     } catch (error) {
       console.log(error);
-      sendError(res, error.message, 500);
+      sendError(res, error.message, error.statusCode);
     }
   },
   async getProductByCod(req, res) {
@@ -58,7 +60,41 @@ module.exports = {
       res.status(200).json(produc);
     } catch (error) {
       console.log(error);
-      sendError(res, error.message, 500);
+      sendError(res, error.message, error.statusCode);
     }
   },
+
+  async updateProduct(req, res) {
+    try {
+        const { id } = req.params;
+        const { content, typePackaging, ...packaging } = req.body;
+
+        const updatedProduct = await updateProduct(id, content, typePackaging, packaging);
+
+        return res.status(200).json({
+          success: true,
+          message: "Producto Actualizado con exito",
+          data: updatedProduct,
+        });
+    } catch (error) {
+        console.log(error);
+        return sendError(res, error.message, error.statusCode);
+    }
+},
+
+async deleteProduct(req, res) {
+    try {
+        const { id } = req.params;
+        const deletedProduct = await deleteProduct(id);
+        
+        res.status(200).json({
+            "success": true,
+            "message": "Producto eliminado",
+            "data": deletedProduct
+        })
+
+    } catch (error) {
+        return sendError(res, error.message, error.statusCode);
+    }
+}
 };

@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["multiSchema"]
 }
 
@@ -14,143 +8,137 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Customer {
+  identification String     @id @db.VarChar(20)
+  first_name     String     @db.VarChar(20)
+  middle_name    String?    @db.VarChar(20)
+  last_name      String     @db.VarChar(20)
+  last_name_2    String?    @db.VarChar(20)
+  email          String     @unique @db.VarChar(30)
+  birthDate      DateTime
+  phone_number   String     @db.VarChar(20)
+  address        String     @db.VarChar(40)
+  neighborhood   String     @db.VarChar(30)
+  state          Boolean    @default(true)
+  warranty       String     @db.VarChar(100)
+  typePerson     PersonType
+  cty_id         String     @db.VarChar(3)
+  dpt_cty_id     String     @db.VarChar(2)
+  city           City       @relation(fields: [cty_id, dpt_cty_id], references: [id, dpt_id])
+  orders         Order[]
+
+  @@map("CUSTOMERS")
+}
+
+model Departament {
+  id     String @id @db.VarChar(2)
+  name   String @db.VarChar(100)
+  cities City[]
+
+  @@map("DEPARTAMENTS")
+}
+
+model City {
+  id          String      @db.VarChar(3)
+  name        String      @db.VarChar(100)
+  dpt_id      String      @db.VarChar(2)
+  departament Departament @relation(fields: [dpt_id], references: [id])
+  customers   Customer[]
+
+  @@id([id, dpt_id])
+  @@map("CITIES")
+}
+
+model Order {
+  order_number        Int           @id @default(autoincrement())
+  identification_user String        @db.VarChar(20)
+  type_process        String        @db.VarChar(15)
+  total               Decimal
+  delivery_code       String?
+  reception_code      String?
+  iduser              Int
+  customers           Customer      @relation(fields: [identification_user], references: [identification])
+  users               User          @relation(fields: [iduser], references: [id])
+  product_orders      DetailOrder[]
+
+  @@map("ORDERS")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(30)
+  last_name    String   @db.VarChar(30)
+  phone_number String   @db.VarChar(30)
+  initial_data DateTime @default(now())
+  email        String   @unique @db.VarChar(30)
+  password     String   @db.VarChar(60)
+  image        String?  @db.VarChar(50)
+  enabled      Boolean  @default(true)
+  rol_id       Int
+  orders       Order[]
+  rolUser      Rol      @relation(fields: [rol_id], references: [id])
+
+  @@map("USERS")
+}
+
+model Rol {
+  id      Int    @id @default(autoincrement())
+  name    String @db.VarChar(20)
+  rolUser User[]
+
+  @@map("ROLES")
+}
+
+model DetailOrder {
+  delivery_date  DateTime?
+  reception_date DateTime?
+  product_amount Int
+  quantity       Int
+  subtotal       Decimal
+  empty          Boolean   @default(true)
+  order_number   Int
+  pkg_id         String    @db.VarChar(8)
+  order          Order     @relation(fields: [order_number], references: [order_number])
+  packaging      Packaging @relation(fields: [pkg_id], references: [id])
+
+  @@id([order_number, pkg_id])
+  @@map("DETAIL_ORDERS")
+}
+
+model Content {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(20)
+  color     String      @db.VarChar(20)
+  packaging Packaging[]
+
+  @@map("CONTENTS")
+}
+
+model Packaging {
+  id               String        @id @db.VarChar(15)
+  hydrostatic_date DateTime
+  owner            String        @db.VarChar(30)
+  empty            Boolean       @default(false)
+  inStorage        Boolean       @default(true)
+  ctt_id           Int
+  tpg_cod          Int
+  content          Content       @relation(fields: [ctt_id], references: [id])
+  typePackaging    TypePackaging @relation(fields: [tpg_cod], references: [cod])
+  producOrders     DetailOrder[]
+
+  @@map("PACKAGINGS")
+}
+
+model TypePackaging {
+  cod             Int         @id @default(autoincrement())
+  size            Float
+  pressure_amount String      @db.VarChar(3)
+  packaging       Packaging[]
+
+  @@map("TYPE_PACKAGINGS")
+}
+
 enum PersonType {
   NATURAL
   JURIDICO
-}
-
-model Customer{
-  identification String @db.VarChar(20) @id
-  first_name String @db.VarChar(20)
-  middle_name String? @db.VarChar(20)
-  last_name String @db.VarChar(20)
-  last_name_2 String? @db.VarChar(20)
-  email String @unique @db.VarChar(30)
-  birthDate DateTime
-  phone_number String @db.VarChar(20)
-  address String @db.VarChar(40)
-  neighborhood String @db.VarChar(30)
-  state Boolean @default(true)
-  warranty String @db.VarChar(100)
-  typePerson PersonType
-  orders Order[]
-
-  cty_id String @db.VarChar(3)
-  dpt_cty_id String @db.VarChar(2)
-
-  city City @relation(fields: [cty_id, dpt_cty_id], references: [id, dpt_id])
-
-  @@map("customers")
-}
-
-model Departament{
-  id String @db.VarChar(2) @id 
-  name String @db.VarChar(100)
-  cities City[] 
-  @@map("departaments")
-}
-
-model City{
-  id String @db.VarChar(3) 
-  name String @db.VarChar(100)
-  customers Customer[]
-
-  dpt_id String @db.VarChar(2) 
-  departament Departament @relation(fields: [dpt_id], references: [id])
-  @@id([id, dpt_id])
-
-  @@map("cities")
-}
-
-model Order{
-  order_number Int @id @default(autoincrement())
-  identification_user String @db.VarChar(20)
-  type_process String @db.VarChar(15)
-  total Decimal  
-
-  iduser Int 
-  user User @relation(fields: [iduser], references: [id])
-  
-  customer Customer @relation(fields: [identification_user], references: [identification])
-  product_orders ProductOrder[]
-
-  @@map("orders")
-}
-
-model User{
- id Int @id @default(autoincrement())
- name String @db.VarChar(30)
- last_name String @db.VarChar(30)
- phone_number String @db.VarChar(30)
- initial_data DateTime @default(now())
- email String @unique @db.VarChar(30)
- password String @db.VarChar(60)
- image String? @db.VarChar(50)
- enabled Boolean @default(true)
-
- rol_id Int
- rolUser Rol @relation(fields: [rol_id], references: [id])
- orders Order[]
-
- @@map("users")
-}
-
-model Rol{
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(20)
-  rolUser User[]
-  @@map("roles")
-}
-
-model ProductOrder{
-  // id 
- delivery_date DateTime 
- reception_date DateTime?
- product_amount Int
- quantity Int
- subtotal Decimal 
- empty Boolean @default(true)
- order_number Int
- order Order @relation(fields: [order_number], references: [order_number])
-
- pkg_id String @db.VarChar(8)
- packaging Packaging @relation(fields: [pkg_id], references: [id])
-
- @@id([order_number, pkg_id])
-
- @@map("product_orders")
-}
-
-model Content{
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(20)
-  color String @db.VarChar(20)
-  packaging Packaging[]
-
-  @@map("contents")
-}
-
-model Packaging{
- id String @db.VarChar(15)  @id 
- hydrostatic_date DateTime
- owner String @db.VarChar(30) //cambiarlo como por el dusño del cilindro
- producOrders ProductOrder[]
-
- ctt_id Int
- content Content @relation(fields: [ctt_id], references: [id])
-
- tpg_cod Int
- typePackaging TypePackaging @relation(fields: [tpg_cod], references: [cod])
-
-@@map("packagings")
-}
-
-model TypePackaging{
- cod Int @id @default(autoincrement())
- size Float
- pressure_amount String @db.VarChar(3)
-//  price Float
- packaging Packaging[]
-
- @@map("type_packagings")
 }

@@ -1,5 +1,5 @@
 
-INSERT INTO distributor_cylinders.cities (id, name, dpt_id)
+INSERT INTO distributor_cylinders."CITIES" (id, name, dpt_id)
 VALUES
 	(001,'Medellín', 5),
 	(002,'Abejorral',5),

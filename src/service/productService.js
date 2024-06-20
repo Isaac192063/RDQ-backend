@@ -27,8 +27,10 @@ async function newProduct(content, typePackaging, packaging) {
 
     return createdPackaging;
   } catch (error) {
-    console.log(error);
-    throw new Error(`Error al crear el empaque: ${error.message}`);
+    if(error.meta){
+      throw new CustomError(`El ${error.meta.target} del ${error.meta.modelName} ya existe`, 400);
+    }
+    throw new CustomError("Error en el servidor", 500);
   }
 }
 
@@ -66,6 +68,9 @@ async function getAllProducts() {
         content: true,
         typePackaging: true,
       },
+      orderBy:{
+        owner: 'desc'
+      }
     });
 
     return products;
@@ -100,4 +105,56 @@ async function getProductByCod(cod){
     throw new CustomError("Error en el servidor", 500);
   }
 }
-module.exports = { newProduct, getByProductId, getAllProducts, getProductByCod };
+
+async function updateProduct(id, content, typePackaging, packaging) {
+  try {
+
+    const productSearch = await prisma.packaging.findFirst({
+      where: {id: id}
+    });
+
+    if(!productSearch){
+      throw new CustomError(`No se encontro el envase`, 404);
+    }
+
+    const updatedPackaging = await prisma.packaging.update({
+      where: { id: id },
+      data: {
+        hydrostatic_date: new Date(packaging.hydrostatic_date).toISOString(),
+        owner: packaging.owner,
+        ctt_id: content.id,
+        tpg_cod: typePackaging.cod,
+        },
+        include: {
+          typePackaging: true,
+          content: true,
+      },
+    });
+
+    return updatedPackaging;
+  } catch (error) {
+    console.log(error);
+    if(error.message){
+
+      throw new CustomError(error.message, error.statusCode);
+      }
+    throw new CustomError(`Error al actualizar el envase`, 500);
+  }
+}
+
+async function deleteProduct(id) {
+  try {
+    const deletedPackaging = await prisma.packaging.delete({
+      where: { id: id,  },
+    });
+
+    return deletedPackaging;
+  } catch (error) {
+    console.log(error);
+    if(error.code === 'P2025'){
+      throw new CustomError(`No se encontro el envase`, 404);
+    }
+    throw new CustomError(`Error al eliminar el envase`, 500);
+  }
+}
+module.exports = { newProduct, getByProductId, getAllProducts, getProductByCod, updateProduct, deleteProduct };

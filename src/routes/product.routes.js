@@ -7,10 +7,9 @@ const routerProduct = Router();
 routerProduct.post("", productController.newProduct);
 routerProduct.get("/name/:id", productController.getProductById);
 routerProduct.get("", productController.getAllProducts);
-routerProduct.put("/:id", async (req, res) => {});
-
+routerProduct.put("/:id", productController.updateProduct);
+routerProduct.delete("/:id", productController.deleteProduct); // Nueva ruta para eliminar el producto
 routerProduct.get("/content", async (req, res) => {
-  console.log("first");
   const products = await prisma.content.findMany();
   return res.status(200).json(products);
 });

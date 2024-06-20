@@ -1,8 +1,8 @@
-INSERT INTO public."roles"(name)
+INSERT INTO distributor_cylinders."ROLES"(name)
 VALUES ('user'),
        ('admin');
 
-       INSERT INTO distributor_cylinders.contents(
+       INSERT INTO distributor_cylinders."CONTENTS"(
 	 name, color)
 	VALUES ( 'OX IND', 'Verde'),
 	('OXI','gris'),
@@ -13,23 +13,26 @@ VALUES ('user'),
 	('ACET','negro'),
 	('AIRE','gris os');
 
-INSERT INTO distributor_cylinders.type_packagings(
+INSERT INTO distributor_cylinders."TYPE_PACKAGINGS"(
 	size, pressure_amount)
-	VALUES ( 6.5, 'M3'),
+	VALUES ( 7, 'M3'),
+	( 6.5, 'M3'),
 	(6,'M3'),
 	(5,'M3'),
+	(4.5,'M3'),
 	(4,'M3'),
 	(3,'M3'),
 	(2,'M3'),
 	(1,'M3'),
 	(1,'KG'),
+	(5,'KG'),
 	(10,'KG' ),
 	(20,'KG'),
 	(25,'KG');
 
 
 	
-	INSERT INTO distributor_cylinders.DEPARTAMENTS (id, name)
+	INSERT INTO distributor_cylinders."DEPARTAMENTS" (id, name)
 VALUES
 	(5,'Antioquia'),
 	(8,'Atlantico'),

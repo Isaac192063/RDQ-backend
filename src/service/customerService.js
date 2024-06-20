@@ -78,6 +78,7 @@ async function updateCustomer(id, customer) {
         identification: id,
       },
       data: {
+        
         first_name: customer.first_name,
         middle_name: customer.middle_name,
         last_name: customer.last_name,
@@ -87,7 +88,8 @@ async function updateCustomer(id, customer) {
         phone_number: customer.neighborhood,
         cty_id: customer.cty_id,
         dpt_cty_id: customer.dpt_cty_id,
-        warranty: customer.warranty
+        warranty: customer.warranty,
+        
       },
     });
 
